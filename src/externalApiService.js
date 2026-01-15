@@ -2,6 +2,10 @@ import axios from 'axios';
 
 console.log('External API Service Loaded');
 
+/**
+ * Fetch data from external API and process it into a dictionary with mapped STATE_NAME : POPULATION
+ * @returns {Object} State dictionary with populations
+ */
 export async function fetchData(){
     try{
         const response = await axios.get('https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_Counties/FeatureServer/0/query?where=1%3D1&outFields=population%2C+state_name&returnGeometry=false&f=pjson');
@@ -13,6 +17,11 @@ export async function fetchData(){
     }
 }
 
+/**
+ * Creates a dictionary and calculates the population for each state
+ * @param {Object} data - API response
+ * @returns {Object} Dictionary with state names as keys and total population as values
+ */
 function createStateDictionary(data){
     try{
         let stateDict = {};
