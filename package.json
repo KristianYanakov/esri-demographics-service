@@ -1,0 +1,20 @@
+{
+  "name": "esri-demographics-service",
+  "version": "1.0.0",
+  "description": "Backend service for aggregating demographic data",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "author": "Kristian Yanakov",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
