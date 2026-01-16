@@ -3,6 +3,7 @@ import cron from 'node-cron';
 import fs from 'fs/promises';
 
 import { fetchData } from './externalApiService.js';
+import { FILE } from 'dns';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -30,9 +31,16 @@ cron.schedule('0 * * * *', () => {
 //First load on server start
 writeDataToFile();
 
-app.get('/', (req,res) => {
-    let context = {"example": "my context value example!"};
-    res.render('index.ejs', context);
+app.get('/', async (req,res) => {
+    try{
+        const data = await fs.readFile(FILE_NAME, 'utf-8');
+        const stateData = JSON.parse(data);
+        
+        res.json(stateData);
+    }catch(error){
+        console.log(error);
+    }
+
 });
 
 //Server Port
