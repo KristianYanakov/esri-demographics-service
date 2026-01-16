@@ -18,7 +18,7 @@ export async function fetchData(){
         
         return stateDictionary;
     }catch (error){
-        console.log(error);
+        console.error(error);
         throw error;
     }
 }
@@ -65,7 +65,7 @@ function createStateDictionary(data){
         return stateDict;
 
     }catch(error){
-        console.log(error);
+        console.error(error);
         throw error;
     }   
 }

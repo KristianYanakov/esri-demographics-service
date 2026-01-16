@@ -2,6 +2,7 @@ import express from 'express';
 import cron from 'node-cron';
 import fs from 'fs/promises';
 import { access } from 'fs/promises';
+import rateLimit from 'express-rate-limit';
 
 import { fetchData } from './externalApiService.js';
 
@@ -9,8 +10,14 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const FILE_NAME = 'stateData.json';
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 100 
+});
+
 app.use(express.json());
 app.use(express.static("public"));
+app.use('/statePopulation', limiter);
 
 /**
  * Periodically fetches demographic data and saves it to a JSON file
@@ -88,7 +95,7 @@ app.get('/statePopulation', async (req, res) => {
             message: `State '${req.query.state}' does not exist in the data.`, 
             });
     }catch(error){
-        console.log(error);
+        console.error(error);
         return res.status(500).json({
             error: 'Internal Server Error',
             message: 'An error occurred while processing your request.', 
@@ -118,7 +125,7 @@ app.get('/', async (req, res) => {
 
         res.render('index.ejs', context);
     }catch(error){
-        console.log(error);
+        console.error(error);
         return res.status(500).json({
             error: 'Internal Server Error',
             message: 'An error occurred while processing your request.', 
