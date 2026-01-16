@@ -168,11 +168,6 @@ esri-demographic-service/
 - ✅ **Performance** - Event-driven архитектура подходяща за реал-time операции
 - ✅ **Мултиплатформеност** - Работи на Windows, Linux, macOS
 
-**Алтернативи разгледани:**
-- ❌ Java/Spring Boot - По-тежък за този use case, overhead за прости операции
-- ❌ Python/Flask - По-бавен при concurrent requests
-- ❌ C#/.NET - Windows-centric, по-сложна конфигурация
-
 ### Data Processing
 
 #### **Axios 1.13.2**
@@ -195,11 +190,6 @@ esri-demographic-service/
 - ✅ **Unix cron syntax** - Standard и разбираем формат
 - ✅ **In-process** - Няма нужда от external scheduler
 - ✅ **Sufficiently robust** - Подходящо за MVP и medium-scale
-
-**Алтернативи разгледани:**
-- ❌ Bull/BullMQ - Изисква Redis, overkill за този use case
-- ❌ node-schedule - По-малко функционалности от node-cron
-- ❌ External cron - Допълнителна конфигурация на OS ниво
 
 ### Data Storage
 
@@ -225,12 +215,6 @@ await db.query('INSERT INTO states (name, population) VALUES ($1, $2)',
 // Future migration към Redis cache:
 await redis.setex('state:california', 3600, JSON.stringify(data));
 ```
-
-**Кога да мигрираме:**
-- 📈 > 10,000 requests/hour
-- 📊 Нужда от historical data/analytics
-- 🔄 Multiple concurrent writers
-- 🌍 Distributed deployment
 
 ### Security
 
@@ -260,11 +244,6 @@ await redis.setex('state:california', 3600, JSON.stringify(data));
 - ✅ **Fast rendering** - Pre-compiled templates
 - ✅ **Good enough** - Достатъчен за прост web interface
 
-**Алтернативи разгледани:**
-- ❌ React/Vue - Overkill за един прост view
-- ❌ Handlebars - По-verbose syntax
-- ❌ Pug - Нестандартен syntax
-
 ### Development Tools
 
 #### **Nodemon 3.1.11**
@@ -287,31 +266,6 @@ CRON_SCHEDULE=0 * * * *     # Cron schedule (default: hourly)
 DATA_FILE=stateData.json    # Output file name
 ```
 
-### Rate Limiting
-
-Промяна на rate limit settings в [index.js](src/index.js):
-
-```javascript
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,  // Time window
-    max: 100                    // Max requests per window
-});
-```
-
-### Cron Schedule
-
-Промяна на cron schedule в [index.js](src/index.js):
-
-```javascript
-// Текуща: на всеки час
-cron.schedule('0 * * * *', () => {...});
-
-// Примери:
-cron.schedule('*/30 * * * *', () => {...});  // Всеки 30 мин
-cron.schedule('0 */6 * * *', () => {...});   // Всеки 6 часа
-cron.schedule('0 0 * * *', () => {...});     // Дневно в полунощ
-```
-
 ## 📊 Data Source
 
 **Esri ArcGIS REST API:**
@@ -329,53 +283,9 @@ cron.schedule('0 0 * * *', () => {...});     // Дневно в полунощ
 
 ## 🧪 Тестване
 
-### Manual Testing
-
-**Test Rate Limiter:**
-```bash
-# PowerShell
-for ($i=1; $i -le 105; $i++) {
-    Invoke-WebRequest -Uri "http://localhost:8000/statePopulation" -UseBasicParsing
-}
-```
-
-**Test State Filter:**
-```bash
-curl http://localhost:8000/statePopulation?state=California
-curl http://localhost:8000/statePopulation?state=texas
-curl http://localhost:8000/statePopulation?state=FLORIDA
-```
-
-**Test Error Handling:**
-```bash
-# Invalid state
-curl http://localhost:8000/statePopulation?state=InvalidState
-
-# Missing data file (delete stateData.json first)
-curl http://localhost:8000/statePopulation
-```
-
 ## 🔧 Error Handling
 
 Приложението имплементира comprehensive error handling:
-
-### API Errors
-- **404** - State not found или липсващ файл
-- **429** - Rate limit exceeded
-- **500** - Internal server error (file read/parse errors)
-- **503** - Service unavailable (data still loading)
-
-### Background Processing
-- Graceful error handling в cron job
-- Не crash-ва приложението при API failure
-- Detailed error logging с timestamps
-- Retry mechanism чрез периодично изпълнение
-
-### Data Validation
-- Проверка за валиден API response
-- Валидация на STATE_NAME и POPULATION
-- Skip на corrupted entries
-- JSON parse error handling
 
 ## 📈 Скалируемост
 
@@ -385,40 +295,6 @@ curl http://localhost:8000/statePopulation
 - ✅ File-based storage
 - ✅ In-process cron scheduling
 
-### Future Scalability Options
-
-#### Database Migration
-```javascript
-// PostgreSQL за persistence
-CREATE TABLE states (
-    name VARCHAR(100) PRIMARY KEY,
-    population BIGINT NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Caching Layer
-```javascript
-// Redis за performance
-await redis.setex('states:all', 3600, JSON.stringify(stateData));
-```
-
-#### Load Balancing
-```
-Client → Nginx Load Balancer
-           ├─> Node.js Instance 1
-           ├─> Node.js Instance 2
-           └─> Node.js Instance 3
-```
-
-#### Message Queue
-```javascript
-// Bull/RabbitMQ за distributed scheduling
-queue.add('update-demographics', {}, {
-    repeat: { cron: '0 * * * *' }
-});
-```
-
 ## 🔐 Security
 
 ### Implemented
@@ -426,74 +302,6 @@ queue.add('update-demographics', {}, {
 - ✅ Input sanitization (case-insensitive search)
 - ✅ Error message sanitization (не leak-ва internals)
 - ✅ CORS configuration via Express
-
-### Production Recommendations
-```javascript
-// Helmet.js за security headers
-import helmet from 'helmet';
-app.use(helmet());
-
-// CORS configuration
-import cors from 'cors';
-app.use(cors({
-    origin: ['https://yourdomain.com'],
-    methods: ['GET']
-}));
-
-// Request logging
-import morgan from 'morgan';
-app.use(morgan('combined'));
-```
-
-## 🚀 Deployment
-
-### Docker (Recommended)
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-EXPOSE 8000
-CMD ["node", "src/index.js"]
-```
-
-```bash
-docker build -t esri-demographic-service .
-docker run -p 8000:8000 esri-demographic-service
-```
-
-### Traditional Hosting
-
-```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install nodejs npm
-git clone <repo-url>
-cd esri-demographic-service
-npm install --production
-npm start
-
-# Use PM2 for process management
-npm install -g pm2
-pm2 start src/index.js --name demographic-service
-pm2 save
-pm2 startup
-```
-
-## 📝 API Versioning
-
-**Current:** v1 (implicit)
-
-**Future versioning strategy:**
-```javascript
-// v1 routes (current)
-app.use('/api/v1/statePopulation', v1Router);
-
-// v2 routes (future)
-app.use('/api/v2/states', v2Router);
-```
 
 ## 🤝 Contributing
 
