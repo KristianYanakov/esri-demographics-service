@@ -30,16 +30,37 @@ cron.schedule('0 * * * *', () => {
 //First load on server start
 writeDataToFile();
 
-app.get('/json', async (req,res) => {
+// app.get('/json', async (req,res) => {
+//     try{
+//         const data = await fs.readFile(FILE_NAME, 'utf-8');
+//         const stateData = JSON.parse(data);
+        
+//         res.json(stateData);
+//     }catch(error){
+//         console.log(error);
+//     }
+// });
+
+app.get('/statePopulation', async (req, res) => {
     try{
         const data = await fs.readFile(FILE_NAME, 'utf-8');
         const stateData = JSON.parse(data);
-        
-        res.json(stateData);
+
+        if(!req.query.state){
+            return res.json(stateData);
+            // return res.status(400).json({ error: 'State ( state ) query parameter is required to filter (ex: statePopulation?state=California)' });
+        }
+
+        for(let stateName in stateData){
+            if(stateName.toLowerCase() === req.query.state.toLowerCase()){    
+                return res.json({ state: stateName, population: stateData[stateName] });
+            }
+        }
+
+        return res.json({ message: 'State not found' });
     }catch(error){
         console.log(error);
     }
-
 });
 
 app.get('/', async (req, res) => {
