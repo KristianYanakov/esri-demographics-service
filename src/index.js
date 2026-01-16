@@ -53,7 +53,8 @@ app.get('/statePopulation', async (req, res) => {
 
         for(let stateName in stateData){
             if(stateName.toLowerCase() === req.query.state.toLowerCase()){    
-                return res.json({ state: stateName, population: stateData[stateName] });
+                return res.json({ state: stateName, population: stateData[stateName] }); //{"state":"California","population":39877642}
+                // return res.json({ [stateName] : stateData[stateName] });  //{"California":39877642}
             }
         }
 
