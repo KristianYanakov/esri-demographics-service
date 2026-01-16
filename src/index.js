@@ -1,6 +1,7 @@
 import express from 'express';
 import cron from 'node-cron';
 import fs from 'fs/promises';
+import { access } from 'fs/promises';
 
 import { fetchData } from './externalApiService.js';
 
@@ -38,7 +39,7 @@ cron.schedule('0 * * * *', () => {
 });
 
 //First save on server start
-writeDataToFile();
+await writeDataToFile();
 
 /**
  * GET /statePopulation
@@ -60,6 +61,15 @@ writeDataToFile();
  */
 app.get('/statePopulation', async (req, res) => {
     try{
+        try{
+            await access(FILE_NAME);
+        }catch{
+            return res.status(404).json({
+                error: 'Data file not found',
+                message: 'The data file is not available. Please try again later.',
+            });
+        }
+
         const data = await fs.readFile(FILE_NAME, 'utf-8');
         const stateData = JSON.parse(data);
 
