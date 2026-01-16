@@ -11,14 +11,24 @@ const FILE_NAME = 'stateData.json';
 app.use(express.json());
 app.use(express.static("public"));
 
+/**
+ * Periodically fetches demographic data and saves it to a JSON file
+ * Handles errors gracefully without crashing the application
+ * @async
+ * @throws {Error} Logs error but doesn't throw to prevent cron job failure
+ */
 async function writeDataToFile(){
     try{
         const data = await fetchData();
 
+        if(!data || Object.keys(data).length === 0){
+            throw new Error('No data received from external API!');
+        }
+
         await fs.writeFile(FILE_NAME, JSON.stringify(data, null, 2));
         console.log('Data written to file successfully');
     }catch(error){
-        console.error(error.message);
+        console.error("Error occured when writing in the file!: " + error.message);
     }
 }
 
@@ -27,20 +37,27 @@ cron.schedule('0 * * * *', () => {
     writeDataToFile();
 });
 
-//First load on server start
+//First save on server start
 writeDataToFile();
 
-// app.get('/json', async (req,res) => {
-//     try{
-//         const data = await fs.readFile(FILE_NAME, 'utf-8');
-//         const stateData = JSON.parse(data);
-        
-//         res.json(stateData);
-//     }catch(error){
-//         console.log(error);
-//     }
-// });
-
+/**
+ * GET /statePopulation
+ * Retrieves state population data with optional filtering by state name
+ * 
+ * @route GET /statePopulation
+ * @queryparam {string} [state] - Optional state name for filtering (case-insensitive)
+ * @returns {Object} 200 - All state populations or single state data
+ * @returns {Object} 404 - State not found
+ * @returns {Object} 500 - Internal server error
+ * 
+ * @example
+ * // Get all states
+ * GET /statePopulation
+ * 
+ * @example
+ * // Get specific state
+ * GET /statePopulation?state=California
+ */
 app.get('/statePopulation', async (req, res) => {
     try{
         const data = await fs.readFile(FILE_NAME, 'utf-8');
@@ -48,22 +65,37 @@ app.get('/statePopulation', async (req, res) => {
 
         if(!req.query.state){
             return res.json(stateData);
-            // return res.status(400).json({ error: 'State ( state ) query parameter is required to filter (ex: statePopulation?state=California)' });
         }
 
         for(let stateName in stateData){
             if(stateName.toLowerCase() === req.query.state.toLowerCase()){    
-                return res.json({ state: stateName, population: stateData[stateName] }); //{"state":"California","population":39877642}
-                // return res.json({ [stateName] : stateData[stateName] });  //{"California":39877642}
+                return res.json({ state: stateName, population: stateData[stateName] });
             }
         }
 
-        return res.json({ message: 'State not found' });
+        return res.status(404).json({
+            error: 'State Not Found',
+            message: `State '${req.query.state}' does not exist in the data.`, 
+            });
     }catch(error){
         console.log(error);
+        return res.status(500).json({
+            error: 'Internal Server Error',
+            message: 'An error occurred while processing your request.', 
+        });
     }
 });
 
+/**
+ * GET /
+ * Renders the home page with state population data in HTML format
+ * 
+ * @route GET /
+ * @returns {HTML} 200 - Rendered EJS template with state data
+ * @returns {Object} 500 - Internal server error
+ * 
+ * @description Displays all states and their populations in a formatted HTML page
+ */
 app.get('/', async (req, res) => {
     try{
         const data = await fs.readFile(FILE_NAME, 'utf-8');
@@ -77,9 +109,19 @@ app.get('/', async (req, res) => {
         res.render('index.ejs', context);
     }catch(error){
         console.log(error);
+        return res.status(500).json({
+            error: 'Internal Server Error',
+            message: 'An error occurred while processing your request.', 
+        });
     }
-})
-//Server Port
+});
+
+/**
+ * Initializes the Express server and starts listening on the specified port
+ * @constant {number} PORT - Server port number from environment variable or default 8000
+ */
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`API endpoint: http://localhost:${PORT}/statePopulation`);
+    console.log(`Web interface: http://localhost:${PORT}/`);
 })
