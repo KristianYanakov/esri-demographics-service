@@ -3,7 +3,6 @@ import cron from 'node-cron';
 import fs from 'fs/promises';
 
 import { fetchData } from './externalApiService.js';
-import { FILE } from 'dns';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -31,7 +30,7 @@ cron.schedule('0 * * * *', () => {
 //First load on server start
 writeDataToFile();
 
-app.get('/', async (req,res) => {
+app.get('/json', async (req,res) => {
     try{
         const data = await fs.readFile(FILE_NAME, 'utf-8');
         const stateData = JSON.parse(data);
@@ -43,6 +42,21 @@ app.get('/', async (req,res) => {
 
 });
 
+app.get('/', async (req, res) => {
+    try{
+        const data = await fs.readFile(FILE_NAME, 'utf-8');
+        const stateData = JSON.parse(data);
+
+        const context = {
+            "stateNames" : Object.keys(stateData),
+            "populations" : Object.values(stateData),
+        }
+
+        res.render('index.ejs', context);
+    }catch(error){
+        console.log(error);
+    }
+})
 //Server Port
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

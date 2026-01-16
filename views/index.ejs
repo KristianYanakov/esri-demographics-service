@@ -7,10 +7,16 @@
 </head>
 
 <body>
-  <h1>CONTEXT TEST</h1>
-    <p>
-      <%= example %>
-    </p>
+
+  <h1>RESULTS</h1>
+    <% if (locals.stateNames && locals.populations) { %>
+      <% for(let i = 0; i < stateNames.length; i++) { %>
+        <p>
+          <%= stateNames[i] %>: <%= populations[i] %>
+        </p>
+      <% } %>
+    <% } %>
+
 </body>
 
 </html>
