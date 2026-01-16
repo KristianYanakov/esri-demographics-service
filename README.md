@@ -233,39 +233,6 @@ await redis.setex('state:california', 3600, JSON.stringify(data));
 - Стандартни RateLimit headers
 - Custom error messages
 
-### Templating
-
-#### **EJS 4.0.1**
-**Избор:** Embedded JavaScript templating
-
-**Аргументи:**
-- ✅ **Минимален learning curve** - Plain JavaScript syntax
-- ✅ **Lightweight** - Само 7.5KB minified
-- ✅ **Fast rendering** - Pre-compiled templates
-- ✅ **Good enough** - Достатъчен за прост web interface
-
-### Development Tools
-
-#### **Nodemon 3.1.11**
-**Избор:** Development auto-reload
-
-**Аргументи:**
-- ✅ **DX improvement** - Auto-restart при промени
-- ✅ **Zero config** - Works out of the box
-- ✅ **Industry standard** - De facto tool за Node.js dev
-
-## ⚙️ Конфигурация
-
-### Environment Variables
-
-Създайте `.env` файл за custom конфигурация:
-
-```env
-PORT=8000                    # Server port (default: 8000)
-CRON_SCHEDULE=0 * * * *     # Cron schedule (default: hourly)
-DATA_FILE=stateData.json    # Output file name
-```
-
 ## 📊 Data Source
 
 **Esri ArcGIS REST API:**
@@ -285,7 +252,7 @@ DATA_FILE=stateData.json    # Output file name
 
 ## 🔧 Error Handling
 
-Приложението имплементира comprehensive error handling:
+Приложението имплементира comprehensive error handling.
 
 ## 📈 Скалируемост
 
@@ -294,14 +261,6 @@ DATA_FILE=stateData.json    # Output file name
 - ✅ Single server instance
 - ✅ File-based storage
 - ✅ In-process cron scheduling
-
-## 🔐 Security
-
-### Implemented
-- ✅ Rate limiting (100 requests/15 min)
-- ✅ Input sanitization (case-insensitive search)
-- ✅ Error message sanitization (не leak-ва internals)
-- ✅ CORS configuration via Express
 
 ## 🤝 Contributing
 
