@@ -1,4 +1,4 @@
-# 📊 Esri Demographic Data Service
+# 📊Demographic Data Service
 
 REST API сървър за обработка и предоставяне на демографски данни от Esri ArcGIS REST services. Проектът извлича данни за населението на САЩ по щати от USA Counties dataset и ги предоставя чрез REST API с възможност за филтриране.
 
